@@ -1,0 +1,602 @@
+@name B4E2
+@inputs Key CON:wirelink
+@outputs OUT:string
+@persist S:array STR SKIP INPUT RUN OUT:string
+@persist GRID:table A B CX CY X Y LX LY MX MY DIR DEBUG EDIT
+@persist RUN_GRID:table OFFX OFFY PRINTCODE PC
+@trigger all
+if(first())
+{
+    GRID = table()
+    for(I=1,30)
+    { GRID[I,array] = array() }
+#[
+    + - - - - - - - - - - - - - - - - +
+    | befunge interpreter in E2 by :d |
+    + - - - - - - - - - - - - - - - - +
+ 
+    Connect to ConsoleScreen, Keyboard
+
+    vertical: 25 :18
+    horizontal: 80 :20
+    DIR:
+        -1-
+        4-2
+        -3-
+]#
+    Line=array()
+    
+
+
+ #[
+v>>31g> ::51gg:2v++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+9p BXY|-+<v3*89<%+ *                                                      *   +
+"21 >98 *7^>+\-0|<+ *                                                     *    +"
+"*5 ^:+ 1pg15\,:< + *                                                     ***  +"
+"10^  <>$25*,51g1v+                                                            +"
+"-^ p<| -*46p15:+<+                                                            +"
+"> 31^> 151p>92*4v+                                                            +"
+" ^_ ".",   ^ vp1<+                                                            +"
+">v >41p      >0 v+                                                            +"
+":5! vg-1g15-1g14<+                                                            +"
+"+1-+>+41g1-51gg+v+                                                            +"
+"1p-1vg+1g15-1g14<+                                                            +"
+"g61g>+41g51g1-g+v+                                                            +"
+"14*1v4+g+1g15g14<+                           * *                              +"
+"5>^4>1g1+51g1-g+v+                           * *                              +"
+"^ _^v4+gg15+1g14<+                           ***                              +"
+">v! >1g1+51g1+g+v+                                                            +"
+"g8-v14/*25-*4*88<+                                                            +"
+"19+>g51gg" "- v  +                                                            +"
+"4*5  v<   v-2:_3v+                                                            +"
+" >^   |!-3_$  v<-+                                                            +"
+"^    < <      <|<+                                                         ***+"
+">g51gp ^ >51gp^>v+                                                            +"
+"^14"+"<  ^g14"!"<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+
+ 
+
+Line[1,string]="v>>31g> ::51gg:2v++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+Line[2,string]="9p BXY|-+<v3*89<%+ *                                                      *   +"
+Line[3,string]="21 >98 *7^>+I-0|<+ *                                                     *    +"
+Line[4,string]="*5 ^:+ 1pg15I,:< + *                                                     ***  +"
+Line[5,string]="10^  <>$25*,51g1v+                                                            +"
+Line[6,string]="-^ p<| -*46p15:+<+                                                            +"
+Line[7,string]="> 31^> 151p>92*4v+                                                            +"
+Line[8,string]=" ^_ '.',   ^ vp1<+                                                            +"
+Line[9,string]=">v >41p      >0 v+                                                            +"
+Line[10,string]=":5! vg-1g15-1g14<+                                                            +"
+Line[11,string]="+1-+>+41g1-51gg+v+                                                            +"
+Line[12,string]="1p-1vg+1g15-1g14<+                                                            +"
+Line[13,string]="g61g>+41g51g1-g+v+                                                            +"
+Line[14,string]="14*1v4+g+1g15g14<+                           * *                              +"
+Line[15,string]="5>^4>1g1+51g1-g+v+                           * *                              +"
+Line[16,string]="^ _^v4+gg15+1g14<+                           ***                              +"
+Line[17,string]=">v! >1g1+51g1+g+v+                                                            +"
+Line[18,string]="g8-v14I*25-*4*88<+                                                            +"
+Line[19,string]="19+>g51gg" "- v  +                                                            +"
+Line[20,string]="4*5  v<   v-2:_3v+                                                            +"
+Line[21,string]=" >^   |!-3_$  v<-+                                                            +"
+Line[22,string]="^    < <      <|<+                                                         ***+"
+Line[23,string]=">g51gp ^ >51gp^>v+                                                            +"
+Line[24,string]="^14'+'<  ^g14'!'<++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+Line[25,string]="                                                                                 "
+Line[26,string]="                                                                                 "
+Line[27,string]="                                                                                 "
+Line[28,string]="                                                                                 "
+Line[29,string]="                                                                                 "
+Line[30,string]="                                                                                 "
+ ]#
+
+    
+    for(I=1,30) {
+        Line[I,string]="                                                                                 "
+        GRID[I,array] = Line[I,string]:explode("")
+    }
+    
+    RUN_GRID = GRID
+    
+    function number asc(V:string)
+    {
+        switch(V)
+        {
+        	case " ",return 32
+        	case "!",return 33
+        	case "\"",return 34
+        	case "#",return 35
+        	case "$",return 36
+        	case "%",return 37
+        	case "&",return 38
+        	case "'",return 39
+        	case "(",return 40
+        	case ")",return 41
+        	case "*",return 42
+        	case "+",return 43
+        	case ",",return 44
+        	case "-",return 45
+        	case ".",return 46
+        	case "/",return 47
+        	case "0",return 48
+        	case "1",return 49
+        	case "2",return 50
+        	case "3",return 51
+        	case "4",return 52
+        	case "5",return 53
+        	case "6",return 54
+        	case "7",return 55
+        	case "8",return 56
+        	case "9",return 57
+        	case ":",return 58
+        	case ";",return 59
+        	case "<",return 60
+        	case "=",return 61
+        	case ">",return 62
+        	case "?",return 63
+        	case "@",return 64
+        	case "A",return 65
+        	case "B",return 66
+        	case "C",return 67
+        	case "D",return 68
+        	case "E",return 69
+        	case "F",return 70
+        	case "G",return 71
+        	case "H",return 72
+        	case "I",return 73
+        	case "J",return 74
+        	case "K",return 75
+        	case "L",return 76
+        	case "M",return 77
+        	case "N",return 78
+        	case "O",return 79
+        	case "P",return 80
+        	case "Q",return 81
+        	case "R",return 82
+        	case "S",return 83
+        	case "T",return 84
+        	case "U",return 85
+        	case "V",return 86
+        	case "W",return 87
+        	case "X",return 88
+        	case "Y",return 89
+        	case "Z",return 90
+        	case "[",return 91
+        	case "\\",return 92
+        	case "]",return 93	
+        	case "^",return 94
+        	case "_",return 95
+        	case "`",return 96
+        	case "a",return 97
+        	case "b",return 98
+        	case "c",return 99
+        	case "d",return 100
+        	case "e",return 101
+        	case "f",return 102
+        	case "g",return 103
+        	case "h",return 104
+        	case "i",return 105
+        	case "j",return 106
+        	case "k",return 107
+        	case "l",return 108
+        	case "m",return 109
+        	case "n",return 110
+        	case "o",return 111
+        	case "p",return 112
+        	case "q",return 113
+        	case "r",return 114
+        	case "s",return 115
+        	case "t",return 116
+        	case "u",return 117
+        	case "v",return 118
+        	case "w",return 119
+        	case "x",return 120
+        	case "y",return 121
+        	case "z",return 122
+        	case "{",return 123
+        	case "|",return 124
+        	case "}",return 125
+        	case "~",return 126
+        	case "",return 127
+         default, return 0 break
+        }
+    }
+
+    function void ins(C:string)
+    {
+        if(!SKIP)
+        {
+            if(!STR)
+            {
+                switch(C)
+                {
+                    case "+",
+                        A = S[S:count(),number] 
+                        B = S[S:count()-1,number] 
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber((A+B))
+                    break
+                    case "-",
+                        A = S[S:count(),number]
+                        B = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(B-A)
+                    break
+                    case "*",
+                        A = S[S:count(),number]
+                        B = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(A*B)
+                    break
+                     case "/",
+                        A = S[S:count(),number]
+                        B = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(A/B)
+                    break
+                    case "%",
+                        A = S[S:count(),number]
+                        B = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(A%B)
+                    break
+                    case "!",
+                        T = S[S:count(),number]
+                        S:popNumber()
+                        if(!T) {
+                            S:pushNumber(1)
+                        }else {
+                            S:pushNumber(0)
+                        }
+                    break
+                    case "`",
+                        A = S[S:count(),number]
+                        B = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        if(B>A) {
+                            S:pushNumber(1)
+                        }else {
+                            S:pushNumber(0)
+                        }
+                    break
+                    case ">",
+                        DIR = 2
+                    break
+                    case "<",
+                        DIR = 4
+                    break
+                    case "^",
+                        DIR = 1
+                    break
+                    case "v",
+                        DIR = 3
+                    break
+                    case "?",
+                        DIR = randint(1,4)
+                    break
+                    case "_",
+                        if(!S[S:count(),number]){DIR=2}else{DIR=4}
+                        S:popNumber()
+                    break
+                    case "|",
+                        if(!S[S:count(),number]){DIR=3}else{DIR=1}
+                        S:popNumber()
+                    break
+                    case "'",
+                        STR=1
+                    break
+                    case "\"",
+                        STR=1
+                    break   
+                                     
+                    case ":",
+                       S:pushNumber(S[S:count(),number])
+                    break
+                    
+                    
+                    case "I",
+                        T1 = S[S:count(),number]
+                        T2 = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(T1)
+                        S:pushNumber(T2)
+                    break   
+                    case "\\",
+                        T1 = S[S:count(),number]
+                        T2 = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(T1)
+                        S:pushNumber(T2)
+                    break
+                    case "$",
+                        S:popNumber()
+                    break
+                    case ".",
+                        OUT+=""+S[S:count(),number]
+                        #print(S[S:count(),number])
+                        CON:writeString("OUT:"+OUT,1,16)
+                        S:popNumber()
+                    break
+                    case ",",
+                        OUT+=toChar(S[S:count(),number])
+                        #print(toChar(S[S:count(),number]))
+                        CON:writeString("OUT:"+OUT,1,16)
+                        S:popNumber()
+                    break
+                    case "#",
+                        SKIP = 1
+                    break
+                    case "r",
+                        OUT = ""
+                        CON:writeString("                            ",1,16)
+                    break
+                    case "p",
+                        TY = S[S:count(),number]
+                        TX = S[S:count()-1,number]
+                        TV = S[S:count()-2,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:popNumber()
+                        RUN_GRID[TY,array][TX,string] = toChar(TV)
+                        CON:writeString(toChar(TV),TX+OFFX,TY+OFFY,vec(255,255,255),vec(0,0,0))
+                        print(TV)
+                    break
+                    case "g",
+                        TY = S[S:count(),number]
+                        TX = S[S:count()-1,number]
+                        S:popNumber()
+                        S:popNumber()
+                        S:pushNumber(asc(RUN_GRID[TY,array][TX,string]))
+                    break
+                    case "&", #num input
+                        INPUT = 1
+                    break
+                    case "~", #char input
+                        INPUT = 1
+                    break
+                    case "@", #End
+                        X = -1
+                        Y = -1
+                        print(OUT)
+                    break
+                    case " ",
+                    
+                    break
+                    
+                    #numbers
+                    default,
+                    if(!C:toNumber()){
+                        T = ("0x"+C:upper()):toNumber(16)
+                        S:pushNumber(T)
+                    }else {
+                        S:pushNumber(C:toNumber())
+                    }
+                    break
+                }
+            }else {#string mode
+                if(C=="'"||C=="\""){STR=0}else {
+                    S:pushNumber(asc(C))
+                }
+            }
+        }else {#skip reset
+            SKIP = 0
+        }
+    }
+    function void move() {
+        LX=X LY=Y
+        switch(DIR) {
+            case 1,if(Y>1){Y--} break
+            case 2,if(X<MX){X++} break
+            case 3,if(Y<MY){Y++} break
+            case 4,if(X>1){X--} break
+        }
+        if(changed(X)||changed(Y)){
+            if(!RUN){
+                CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,0))
+                CON:writeString(GRID[LY,array][LX,string],LX+OFFX,LY+OFFY,vec(255,255,255),vec(0,0,0))
+                
+            }else {
+            if((X+OFFX)>0&&(Y+OFFY)>0&&(LX+OFFX)>0&&(LY+OFFY)>0){
+                CON:writeString(RUN_GRID[Y-OFFY,array][X-OFFX,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(0,255,0),0)
+                CON:writeString(RUN_GRID[LY-OFFY,array][LX-OFFX,string],LX+OFFX,LY+OFFY,vec(255,255,255),vec(0,0,0))
+                }
+            }
+        }
+    }
+    
+    function void printGrid() {
+        PC = 0
+        PRINTCODE = 1
+    }
+    
+    function void printBorder() {
+        CON:writeString("/============================\\",0,0)
+        CON:writeString(" B/E2 ",5,0)
+        
+        for(I=1,18){
+             CON:writeString("|                            |",0,I)
+        }
+        CON:writeString("\\============================/",0,17)
+    }
+    
+    function void init() {
+        LX = 0
+        LY = 0
+        X = 1
+        Y = 1
+        OFFX = 0
+        OFFY = 0
+        DIR = 2
+        STR = 0
+        SKIP = 0
+        S = array()
+        OUT = ""
+        INPUT = 0
+    }
+    
+    #* * * * * * * * *#
+    printBorder()
+    DIR = 2
+    RUN = 0
+    X = 1
+    Y = 1
+    MX = 28  #Screen MAX X
+    MY = 16
+    OFFX = 0
+    OFFY = 0
+    DEBUG = 0
+    
+    RESET = 1
+    timer("stopreset",100)
+}
+if(clk("stopreset")){RESET=0}
+
+
+
+interval(1)
+
+
+
+if(RUN) {
+    if(!PRINTCODE&&!INPUT)
+    {
+        ins(GRID[Y,array][X,string]) 
+    
+        if(DEBUG) {
+            print("["+GRID[Y,array][X,string]+"]")
+            TS=""
+            for(I=0,9) {
+                 TS+=","+S[I,number]
+            }
+            print("[Stack]:"+TS+"/c:"+S:count())
+        }
+        if(!INPUT){
+        move()
+        }
+    }
+}else {
+
+}
+    #Keyboard
+    if(changed(Key)&&Key!=0) {
+        if(RUN){
+            switch(Key)
+            {
+                case 10,
+                    RUN=!RUN 
+                    printGrid() 
+                    init() 
+                    X=CX 
+                    Y=CY
+                    
+                break
+                case 17,if(OFFY!=0&&!PRINTCODE){ OFFY+=3 printGrid() } break #W
+                case 20,if(!PRINTCODE){OFFX-=5  printGrid() } break #D
+                case 18,if(!PRINTCODE){OFFY-=3  printGrid() } break #S
+                case 19,if(OFFX!=0&&!PRINTCODE){OFFX+=5 printGrid() } break #A
+                default, 
+                    if(INPUT){
+                        if(RUN_GRID[Y,array][X,string]=="&"){
+                            S:pushNumber(toChar(Key):toNumber())
+                        }
+                        elseif(RUN_GRID[Y,array][X,string]=="~"){
+                            S:pushNumber(Key)
+                        }
+                        INPUT=0
+                        move()
+                    }
+                break
+            }
+        }else{
+            switch(Key)
+            {
+                case 17,DIR=1 move()  break #W
+                case 20,DIR=2 move()  break #D
+                case 18,DIR=3 move()  break #S
+                case 19,DIR=4 move()  break #A
+                
+                case 154, break #R
+                case 157, break #Alt
+                case 158, break #Alt..
+                
+                case 10,RUN=!RUN RUN_GRID=GRID printGrid() CX=X CY=Y init() break #Enter
+                
+                case 159,    
+                for(I=1,18)
+                  { 
+                    GRID[I,array] = array() 
+                    Line[I,string]="                                                                                 "
+                    GRID[I,array] = Line[I,string]:explode("")
+                  }
+                printGrid()
+                break#STRG
+                
+                case 127,            
+                if(X>1){DIR=4 move()}     
+                GRID[Y,array][X,string] = " "
+                CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,255))
+                break #Add-Toggle / Backspace
+                
+                case 40, 
+                GRID[Y,array][X,string] = "<"
+                CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,0))
+                    if(X<MX){DIR=2 move()}
+                break
+                case 41, 
+                GRID[Y,array][X,string] = ">"
+                CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,0))
+                    if(X<MX){DIR=2 move()}
+                break
+                
+                default,
+                    GRID[Y,array][X,string] = toChar(Key)
+                    CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,0))
+                    if(X<MX){DIR=2 move()}
+                break
+                
+            }
+        }
+    }
+
+if(PRINTCODE)
+{ 
+    interval(10)
+    PC++
+    CON:writeString(">",0,PC,vec(0,255,0),vec(0,0,255))
+    
+    if(PC!=1){
+        CON:writeString("|",0,PC-1,vec(255,255,255),vec(0,0,0))
+    }
+    
+    if(PC==19){
+        CON:writeString("|",0,PC,vec(255,255,255),vec(0,0,0))
+    }
+    
+    for(J=1,MX){
+        if(!RUN) {
+            CON:writeString(GRID[PC,array][J,string],J+OFFX,PC+OFFY,vec(255,255,255),vec(0,0,0))
+        }else {
+            if((J+OFFX)>0&&(PC+OFFY)>0){
+            CON:writeString(RUN_GRID[PC-OFFY,array][J-OFFX,string],J+OFFX,PC+OFFY,vec(255,255,255),vec(0,0,0))
+            }
+        }
+    }
+    if(PC>18){
+        PRINTCODE = 0
+        if(!RUN){
+        CON:writeString(GRID[Y,array][X,string],X+OFFX,Y+OFFY,vec(255,255,255),vec(255,0,0))
+        }   
+    }
+}
+
+
+
+
+

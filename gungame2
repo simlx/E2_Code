@@ -1,0 +1,506 @@
+@name gungame2
+@inputs Start End E:wirelink Player:entity
+@inputs [Bar1 Bar2 Bar3 BackWall]:entity
+@outputs Light:vector
+@persist Target:entity Target2:entity
+@persist InGame Points Misses Time Switch Tick Tick2 Tick3 Tick4
+@persist GameFirst GameCountDown PreGame AfterGame FirstStart
+@persist Show_Gameover LastGenPos:vector
+@persist EndScoreCounter EndMissCounter EndScoreComplete
+@persist Leaderboard:table
+@trigger 
+
+# Gun Game
+# inspired by Player MrBrumble
+# made by simlzx / :d (STEAM_0:0:31841171)
+
+#
+# How to play:
+#  press the start button to begin
+#  shoot the objects that appear without missing
+#  when the time runs out you get the result in hits/misses
+#
+
+if(first())
+{
+    E:egpClear()
+    entity():setAlpha(0)
+    Leaderboard = table()
+    
+    AfterGame = 1
+    function vector getRandomPos()
+    {
+        Random = randint(1,9)
+        ReturnPos = vec()
+            switch(Random)
+            {
+                case 1,
+                    ReturnPos = entity():pos() + vec(-35,0,36)
+                break
+                case 2,
+                     ReturnPos =  entity():pos() + vec(0,0,36)
+                break
+                case 3,
+                     ReturnPos =  entity():pos() + vec(35,0,36)
+                break
+                case 4,
+                     ReturnPos =  entity():pos() + vec(-35,0,18)
+                break
+                case 5,
+                     ReturnPos =  entity():pos() + vec(0,0,18)
+                break
+                case 6,
+                     ReturnPos =  entity():pos() + vec(35,0,18)
+                break
+                case 7,
+                     ReturnPos =  entity():pos() + vec(-35,0,0)
+                break
+                case 8,
+                    ReturnPos =  entity():pos() + vec(0,0,0)
+                break
+                case 9,
+                    ReturnPos =  entity():pos() + vec(35,0,0)
+                break
+            }
+        return ReturnPos
+    }
+    
+    function string getRandomMat()
+    {
+        
+        Random = randint(1,3)
+        switch(Random)
+        {
+            case 1,
+                return "passtime/neons/neon_red_point"
+            break
+            case 2,
+                return "passtime/neons/neon_blue_point"
+            break
+            case 3,
+                return "passtime/neons/neon_orange_point"
+            break
+            case 4,
+                return "passtime/neons/neon_green_point"
+            break
+            
+        }
+    }
+    
+    function string getRandomMusic()
+    {
+        Random = randint(1,5)
+        switch(Random)
+        {
+            case 1,
+                return "ambient/music/mirame_radio_thru_wall.wav"
+            break
+            case 2,
+                return "ambient/misc/techno_overpass.wav"
+            break
+            case 3,
+                return "ambient/music/latin.wav"
+            break
+            case 4,
+                return "ambient/music/country_rock_am_radio_loop.wav"
+            break           
+            case 5,
+                return "ambient/music/dustmusic2.wav"
+            break
+            
+        }
+    }
+    
+    function string undecorate(Name:string)
+    {
+        
+    }
+    
+    function void endScore()
+    {
+        
+        if(EndScoreCounter == 0)
+        {
+            entity():soundPlay(8,0,"ambient/music/cubanmusic1.wav")
+            soundVolume(8,0.2)
+        }
+        
+        if(EndScoreCounter<Points)
+        {
+            EndScoreCounter++
+            if(EndScoreCounter==Points)
+            {
+                entity():soundPlay(5,0,"ambient/misc/tink1.wav")
+            }
+        }
+        elseif(EndMissCounter<Misses)
+        {
+            EndMissCounter++
+            if(EndMissCounter==Misses)
+            {
+                entity():soundPlay(6,0,"ambient/misc/tink1.wav")
+                
+            }
+        }
+        else
+        {
+            
+        }
+    }
+    
+    function void placeRandomTarget()
+    {
+        PlacePos = vec()
+        while(1)
+        {
+            PlacePos = getRandomPos()
+            if(PlacePos == LastGenPos)
+            {
+                
+            }
+            else
+            {
+                break   
+            }
+        }
+        LastGenPos = PlacePos
+        Target:setPos(PlacePos)
+    }
+    
+
+    function void resetRound()
+    {
+        Points = 0
+        Misses = 0
+        Time = 60
+    }
+    
+      function number getScoreValue()
+    {
+        return Points*20
+    }
+    function void addToLeaderboard(ID:string)
+    {
+        FOUND = 0
+        for(I=1,Leaderboard:count())
+        {
+            if(Leaderboard[I,array][1,string] == ID)
+            {
+                if(Leaderboard[I,array][2,number]<=Points)
+                {
+                    Leaderboard[I,array][2,number] = Points
+                    Leaderboard[I,array][3,number] = Misses
+                    
+                }
+                elseif(Leaderboard[I,array][2,number]==Points&&
+                Leaderboard[I,array][3,number]>Misses){
+                    Leaderboard[I,array][2,number] = Points
+                    Leaderboard[I,array][3,number] = Misses
+                }
+                Leaderboard[I,array][2,number] = Points
+                FOUND = 1 
+            }
+        }
+        if(!FOUND)
+        {
+            print("adding "+Player:id())
+            LIndex = Leaderboard:count()+1
+            Leaderboard[LIndex,array] = array()
+            Leaderboard[LIndex,array][1,string] = ID
+            Leaderboard[LIndex,array][2,number] = Points
+            Leaderboard[LIndex,array][3,number] = Misses
+            
+        }
+    }
+
+    
+    function void showLeaderboard()
+    {
+        E:egpText(100,"Leaderboard",vec2(190,225))
+        E:egpFont(100,"",35)
+        for(I=101,100+Leaderboard:count())
+        {
+            E:egpText(I,Leaderboard[I-100,array][1,string]+": "+
+                Leaderboard[I-100,array][2,number]
+                +"/"+Leaderboard[I-100,array][3,number]
+                +" ("+round(100*(Leaderboard[I-100,array][2,number]/(Leaderboard[I-100,array][2,number]+Leaderboard[I-100,array][3,number])))+
+                "%)",vec2(190,245+((I-100)*24))
+                
+                )  
+            E:egpFont(I,"",20)
+            E:egpColor(I,vec(255,255,255))
+        }
+    }
+    
+    function void hideLeaderboard()
+    {
+        E:egpText(100,"",vec2(0,0))
+        for(I=101,101+Leaderboard:count())
+        {
+            E:egpText(I,"",vec2(0,0))
+        }
+    }
+    
+    
+    function void endRound()
+    {
+        Target:propBreak()
+        Target = noentity()
+        entity():soundPlay(2,0,"ambient/misc/windchime2.wav")
+        stoptimer("NextTime")
+        Time = 0
+        InGame = 0
+        GameFirst = 0
+        AfterGame = 1
+        timer("hideGameover",4000)
+        Show_Gameover = 1
+        FirstStart = 0
+        soundStop(10,0.5)
+        EndScoreCounter = 0
+        EndMissCounter = 0
+        hideLeaderboard()
+        addToLeaderboard(""+Player:steamID())
+    }
+    
+    function void spawnTarget()
+    {
+        Target = propSpawn("models/props_junk/glassjug01.mdl",getRandomPos(),ang(0,0,0),1)
+        Target:setMass(10)
+        placeRandomTarget()
+        Target:setMaterial(getRandomMat())
+        
+    }
+    
+    function void targetHit()
+    {
+        Points++
+        spawnTarget()
+        entity():soundPlay(1,0.3,"ambient/tones/elev1.wav")
+    }
+    
+    function void targetMiss()
+    {
+        entity():soundPlay(1,0.1,"ambient/machines/fluorescent_hum_1.wav")
+        Misses++
+    }
+    
+    function void startRound()
+    {
+        BackWall:soundPlay(10,0,getRandomMusic())
+        resetRound()
+        InGame = 1
+        timer("NextTime",1000)
+    }
+    
+
+
+}
+
+runOnTick(1)
+
+
+
+if(End)
+{
+    if(Tick3>120) {
+        Tick3 = 0
+        endRound()
+    }
+}
+
+    if(clk("countdown"))
+    {
+        timer("countdown",1000)
+        GameCountDown--
+        if(GameCountDown==0)
+        {
+            stoptimer("countdown")
+            startRound()
+            soundStop(4,0)
+            PreGame = 0
+        }
+    }
+
+if(InGame)
+{
+    if(GameFirst == 0)
+    {
+        spawnTarget()   
+        GameFirst = 1
+    }
+    
+
+    if(Target == noentity())
+    {
+        targetHit()
+        Tick=0
+    }
+    
+    if(changed(Bar1:getLastDamageTime())
+    ||changed(Bar2:getLastDamageTime())
+    ||changed(Bar3:getLastDamageTime())
+    ||changed(BackWall:getLastDamageTime()))
+    {
+        targetMiss()
+        Tick2=0
+    }
+    
+
+    if(Time<=0)
+    {
+        endRound()
+    }
+}
+else
+{
+    if(Start)
+    {
+        if(FirstStart == 0 && AfterGame == 1)
+        {
+        hideLeaderboard()
+        Bar1:soundPlay(2,0,"ambient/office/office_projector_slide_02.wav")
+        FirstStart = 1    
+        PreGame = 1
+        AfterGame = 0
+        timer("countdown",1000)
+        GameCountDown = 3
+        entity():soundPlay(4,0,"ambient/tones/fan1.wav")
+        soundStop(8,0.4)
+        }
+    }
+}
+
+## EGP Display
+
+#E:egpBoxOutline(1,vec2(255,350),vec2(360,280))
+
+if(clk("hideGameover"))
+{
+    Show_Gameover = 0
+}
+    
+if(PreGame)
+{
+    E:egpText(5,"Get Ready",vec2(210,255))
+    E:egpFont(5,"",21)
+    E:egpText(6,""+GameCountDown,vec2(255,295))
+    E:egpFont(6,"",34)
+    
+    E:egpText(7,"",vec2(0,0))
+    E:egpText(8,"",vec2(0,0))
+    
+    
+    E:egpPos(2,vec2(-100,-100))
+    E:egpPos(3,vec2(-100,-100))
+    E:egpPos(4,vec2(-100,-100))
+    
+}
+elseif(AfterGame)
+{
+
+if(Show_Gameover)
+{
+    E:egpText(5,"Gameover",vec2(190,255))
+    E:egpFont(5,"",35)
+  #  E:egpText(6,"Points: "+Points,vec2(225,295))
+    E:egpFont(6,"",21)
+  #  E:egpText(7,"Misses: "+Misses,vec2(225,325))
+    E:egpFont(7,"",21)
+}
+else
+{
+    
+    endScore()
+
+    LP1 = sin(Tick*2)*6
+    LP2 = sin((Tick*2)+10)*6
+    
+    
+    E:egpText(5,"",vec2(190,255))
+    E:egpText(6,"Points: "+round(EndScoreCounter),vec2(145,385+LP1))
+    E:egpFont(6,"",21)
+    E:egpText(7,"Missed: "+round(EndMissCounter),vec2(265,385+LP2))
+    E:egpFont(7,"",21)
+    E:egpColor(6,vec(150,150,150))
+    E:egpColor(7,vec(150,150,150))
+    if(Points==EndScoreCounter&&Misses==EndMissCounter)
+    {
+        E:egpColor(6,vec(0,255,0))
+        E:egpColor(7,vec(255,0,0))
+        showLeaderboard()
+       # E:egpText(8,"k/d "+(Points/Misses),vec2(235,355))
+        #E:egpFont(8,"",18)
+    }
+}
+
+    E:egpColor(5,vec(0,255,0))
+    
+
+    
+    E:egpPos(2,vec2(-100,-100))
+    E:egpPos(3,vec2(-100,-100))
+    E:egpPos(4,vec2(-100,-100))
+}
+elseif(InGame)
+{
+    E:egpText(5,"",vec2(0,0))
+    E:egpText(6,"",vec2(0,0))
+    E:egpText(7,"",vec2(0,0))
+    E:egpText(8,"",vec2(0,0))
+    
+    
+ #   E:egpText(2,"Points: "+Points,vec2(80,300))
+    E:egpFont(2,"",15)
+    E:egpText(3,"Time: "+Time,vec2(80,380))
+    E:egpFont(3,"",15)
+ #   E:egpText(4,"Miss: "+Misses,vec2(80,330))
+    E:egpFont(4,"",15)
+    
+    E:egpColor(2,vec(150,150,150))
+    E:egpColor(3,vec(150,150,150))
+    E:egpColor(4,vec(150,150,150))
+    
+}
+else
+{
+    E:egpText(5,"",vec2(0,0))
+    E:egpText(6,"",vec2(0,0))
+    E:egpText(7,"",vec2(0,0))
+}
+
+if(Tick<5)
+{
+    Light = vec(0,255,0)
+   E:egpColor(1,vec(0,255,0))
+   E:egpColor(2,vec(0,255,0))
+   Target:setColor(vec(255,255,0))
+}
+elseif(Tick2<5)
+{
+        Light = vec(255,0,0)
+   E:egpColor(1,vec(255,0,0))
+   E:egpColor(4,vec(255,0,0))
+}
+else
+{
+        Light = vec(0,0,0)
+   E:egpColor(1,vec(20,20,20))   
+   Target:setColor(vec(150,150,150))  
+   E:egpColor(2,vec(150,150,150))
+   E:egpColor(4,vec(150,150,150))
+}
+if(clk("NextTime"))
+{
+    Time--
+    if(Time<10)
+    {
+        Bar2:soundPlay(9,0.5,"ambient/office/tech_oneshot_08.wav") 
+        soundVolume(9,0.7)
+    }
+    timer("NextTime",1000)
+}
+
+Tick++
+Tick2++
+Tick3++
+Tick4++

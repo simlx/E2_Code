@@ -1,0 +1,699 @@
+@name npc[scientist]
+@inputs 
+@outputs 
+@persist 
+@persist Health Can_Use Hitbox Max_Health
+@persist
+@persist [IDLE_A THROW_A WALK_A RUN_A IDK_A FEAR_A DEAD_A DEATH_A REVIVE_A WAVE_A PACE_A PANIC_A]:string
+@persist Dead Died DamageTaken DamageLast DTF
+@persist Last_Animation:string
+@persist NPC_State:string
+@persist MOVE_STATE:string TURN_STATE:string
+@persist StickTurnDirection:string
+@persist TurningTimerActive MovementTimerActive SoundTimerActive FearTimerActive InteractTimerActive
+@persist Sounds:array Hello_Sounds:array
+@persist NPC:entity Chair:entity Target:entity Healer:entity
+@persist MOD
+@trigger 
+@model models/props_borealis/bluebarrel001.mdl
+interval(50)
+
+# made by simlzx
+# 2020
+
+if(Hitbox)
+{
+    if(Dead)
+    {
+        entity():setPos(NPC:pos() + vec(0,0,0))
+    }
+    else
+    {
+        entity():setPos(NPC:pos() + vec(0,0,45))
+    }
+}
+
+if(first())
+{
+    entity():propFreeze(1)
+    entity():propDraw(0)
+    if(!Hitbox)
+    {
+        entity():setPos(vec(0,0,50))
+    }
+    Sounds = array(
+         "scientist/ahfreeman.wav",
+         "scientist/beverage.wav",
+         "scientist/donuteater.wav",
+         "scientist/areyouthink.wav",
+         "scientist/didyouhear.wav",
+         "scientist/cascade.wav",
+         "scientist/greetings.wav",
+         "scientist/greetings2.wav",
+         "scientist/hello.wav",
+         "scientist/hello2.wav",
+         "scientist/noidea.wav",
+         "scientist/fascinating.wav",
+         "scientist/seencup.wav",
+         "scientist/hungryyet.wav",
+         "scientist/bloodsample.wav",
+         "scientist/noguess.wav"
+    )
+    
+    Hello_Sounds = array(
+         "scientist/greetings.wav",
+         "scientist/greetings2.wav",
+         "scientist/hello.wav",
+         "scientist/hello2.wav",
+         "scientist/ahfreeman.wav"
+    )
+    
+    entity():setAlpha(0)
+    entity():setAng(ang(0,0,0))
+    
+    IDLE_A = "LineIdle03"
+    WALK_A = "walk_all_Moderate"
+    RUN_A = "run_all"
+    JUMP_A = "jump_holding_jump"
+    IDK_A = "Seafloor_Poses"
+    FEAR_A = "Fear_Reaction"
+    DEATH_A = "deathpose_front"
+    DEAD_A = "injured3"
+    WAVE_A = "Wave"
+    PACE_A = "pace_all"
+    PANIC_A = "run_all_panicked"
+    REVIVE_A = "Sit_Ground_to_Idle"
+    THROW_A = "throw1"
+    
+    MOD = 1.8 #1.8
+    
+    NPC_State = "normal"
+    
+    Can_Use = 1
+    Hitbox = 1
+    
+    Max_Health = 100
+    Health = Max_Health
+    DamageTaken = entity():getLastDamage()
+    DamageLast = DamageTaken
+    DTF = 1
+    
+    holoCreate(1)
+    holoModel(1,"models/Kleiner.mdl")
+    holoAnim(1,"LineIdle01")
+    holoAng(1, ang(0,0,0))
+    holoScale(1,vec(1,1,1))
+
+    function void animation(Anim:string)
+    {
+        if (Anim != Last_Animation)
+        {
+            holoAnim(1,Anim)
+            Last_Animation = Anim
+        }
+    }
+
+    function void checkPlayerUse()
+    {
+        if(Can_Use)
+        {
+            Players = players()
+            for(I=1,Players:count())
+            {
+                if(Players[I,entity]:aimEntity() == entity())
+                {
+                    if(Players[I,entity]:keyUse())
+                    {
+                        Can_Use = 0
+                        timer("usable",100)
+                        Last_Animation = "idle"
+                        MOVE_STATE = "wave"
+                        TURN_STATE = "idle"
+                        stoptimer("random_turning")
+                        TurningTimerActive = 0
+                        YAW = (Players[I,entity]:pos() - NPC:pos()):toAngle()
+                        holoAng(1, ang(0,YAW:yaw(),0))
+                        NPC:soundPlay(3,0,Hello_Sounds[randint(Hello_Sounds:count()),string])
+                    }
+                }
+            }
+        }
+    }
+    
+    function void stopActions()
+    {
+        stoptimer("random_turning")
+        stoptimer("random_movement")
+        stoptimer("random_interact")
+        stoptimer("random_sound")
+        stoptimer("return_state")
+        InteractTimerActive = 0
+        TurningTimerActive = 0
+        MovementTimerActive = 0
+        SoundTimerActive = 0      
+    }
+    
+    function void randomInteraction()
+    {
+        findByClass("player")
+        findSortByDistance(NPC:pos())
+        RESULT = findToArray()
+        if(NPC_State == "normal")
+        {
+            if(RESULT[1,entity]:pos():distance(NPC:pos()) < 300)
+            {
+                YAW = (RESULT[1,entity]:pos() - NPC:pos()):toAngle()
+                holoAng(1, ang(0,YAW:yaw(),0))
+                Last_Animation = "idle"
+                MOVE_STATE = "wave"
+                TURN_STATE = "idle"
+                stopActions()
+                switch(randint(2))
+                {
+                    case 1,
+                        NPC:soundPlay(1,0,"scientist/freemanalive.wav")
+                    break 
+                    case 2,
+                        NPC:soundPlay(1,0,"scientist/hellofromlab.wav")
+                    break
+                }
+                timer("return_state",1500)
+            }    
+        }
+        elseif(NPC_State == "fear")
+        {
+            if(RESULT[1,entity]:pos():distance(NPC:pos()) < 1200)
+            {
+                YAW = (RESULT[1,entity]:pos() - NPC:pos()):toAngle()
+                holoAng(1, ang(0,YAW:yaw(),0))
+                Last_Animation = "idle"
+                MOVE_STATE = "throw"
+                TURN_STATE = "idle"
+                stopActions()
+                NPC:soundPlay(1,0,"scientist/sci_fear14.wav")
+                Chair = propSpawn("models/props_c17/chair02a.mdl",NPC:pos()+NPC:eye()*-10+vec(0,0,50),NPC:eyeAngles(),0)
+                Chair:setAng((RESULT[1,entity]:pos() - Chair:pos()):toAngle())
+                Chair:applyForce(Chair:eye()*39200)
+                Chair:applyAngForce(NPC:eyeAngles()*524)
+                Chair:setMass(800)
+                
+                timer("break_chair",1000)
+                timer("return_state",1000)
+                
+            }  
+        }
+        InteractTimerActive = 0          
+    }
+    
+
+    
+    function void checkPlayerHealing()
+    {
+        Players = players()
+        if(NPC_State != "revive")
+        {
+            for(I=1,Players:count())
+            {
+                if(Players[I,entity]:aimEntity() == entity())
+                {
+                    if(Players[I,entity]:pos():distance(entity():pos())< 200)
+                    {
+                        if(Players[I,entity]:keyAttack1() && Players[I,entity]:weapon():type() == "weapon_medkit")
+                        {
+                            MOVE_STATE = "revive"
+                            NPC_State = "revive"
+                            Healer = Players[I,entity]
+                            timer("healed",3000)
+                            NPC:soundPlay(3,0,"hl1/fvox/fuzz.wav")                
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    function void randomSound()
+    {
+        if(NPC_State == "normal")
+        {
+            NPC:soundPlay(1,0,Sounds[randint(Sounds:count()),string])
+        }
+        elseif (NPC_State == "fear")
+        {
+            NPC:soundPlay(1,0,"scientist/sci_fear"+randint(15)+".wav")
+        }
+        soundVolume(1,0.7)
+        SoundTimerActive = 0
+    }
+    
+    function void randomMovementState()
+    {
+        if(NPC_State == "normal")
+        {
+            switch(randint(3))
+            {
+                case 1, 
+                    MOVE_STATE = "walk" 
+                break
+                case 2, 
+                    MOVE_STATE = "idle"
+                break
+                case 3,
+                    MOVE_STATE = "pace"
+                break
+            }
+        }
+        elseif (NPC_State == "fear")
+        {
+            switch(randint(3))
+            {
+                case 1, 
+                    MOVE_STATE = "run_panic" 
+                break
+                case 3,
+                    MOVE_STATE = "fear"
+                break
+                case 4,
+                    MOVE_STATE = "fear"
+                break
+                
+            }
+        }
+        else
+        {
+            MOVE_STATE = "idle"
+        }
+
+        MovementTimerActive = 0
+    }
+    
+    function void randomTurningState()
+    {
+        switch(randint(2))
+        {
+            case 1, TURN_STATE = "left" break
+            case 2, TURN_STATE = "right" break
+        }
+        timer("stop_turning",randint(800)+80)
+        TurningTimerActive = 0
+    }
+    
+    function void die()
+    {
+        if(Dead == 0)
+        {
+            MOVE_STATE = "dying"
+            TURN_STATE = "idle"
+            Dead = 1      
+            stopActions()
+            stoptimer("stop_fear")
+            stoptimer("return_state")
+            NPC:soundPlay(5,0,"scientist/sci_pain1.wav")
+            timer("die",900)
+        }
+    }
+    
+
+    NPC = holoEntity(1)
+}
+
+     
+if(Dead == 0)
+{
+    if(Hitbox)
+    {
+        ## ** CHECK_HIT ** ##
+        if( DTF == 0 && changed(entity():getLastDamageTime()))
+        {
+            NPC:soundPlay(2,0,"scientist/sci_pain"+randint(10)+".wav") 
+            soundVolume(2,2)  
+            NPC_State = "fear"
+            MOVE_STATE = "fear"
+            TURN_STATE = StickTurnDirection
+            
+            if(changed(NPC_State))
+            {
+                stoptimer("random_interact")
+                InteractTimerActive = 0   
+            }
+            
+            stoptimer("random_turning")
+            TurningTimerActive = 0
+            
+            stoptimer("random_movement")
+            MovementTimerActive = 0
+            
+            stoptimer("random_sound")
+            SoundTimerActive = 0
+
+            stoptimer("stop_fear")
+            FearTimerActive = 0
+            
+            Health-=entity():getLastDamage()
+            if(Health <= 0)
+            {
+                die()
+            }
+        }
+        DTF = 0
+        
+    }
+    if(Hitbox)
+    {
+    ## ** CHECK_PLAYER_USE ** ##   
+        if(Can_Use)
+        {
+            Players = players()
+            for(I=1,Players:count())
+            {
+                if(Players[I,entity]:aimEntity() == entity())
+                {
+                    if(Players[I,entity]:keyUse())
+                    {
+                        Can_Use = 0
+                        timer("usable",100)
+                        Last_Animation = "idle"
+                        MOVE_STATE = "wave"
+                        TURN_STATE = "idle"
+                        stoptimer("random_turning")
+                        TurningTimerActive = 0
+                        YAW = (Players[I,entity]:pos() - NPC:pos()):toAngle()
+                        holoAng(1, ang(0,YAW:yaw(),0))
+                        NPC:soundPlay(3,0,Hello_Sounds[randint(Hello_Sounds:count()),string])
+                    }
+                }
+            }
+        }
+        
+    }
+   
+
+    ## ** RANDOM_ACTIONS ** ##
+            if (!TurningTimerActive)
+            {
+                TurningTimerActive = 1
+                if(NPC_State == "normal")
+                {
+                    timer("random_turning",randint(1700) + 300)
+                }
+                elseif (NPC_State == "fear")
+                {
+                    timer("random_turning",randint(900) + 100)
+                }
+                else
+                {
+                    timer("random_turning",randint(1700) + 300)
+                }
+            }
+            
+            if (!MovementTimerActive)
+            {
+                MovementTimerActive = 1
+                if(NPC_State == "normal")
+                {
+                    timer("random_movement",randint(2500) + 900)
+                }
+                elseif (NPC_State == "fear")
+                {
+                    timer("random_movement",randint(1000) + 300)
+                }
+                else
+                {
+                    timer("random_movement",randint(2500) + 900)
+                }
+            }
+            
+            if (!SoundTimerActive)
+            {
+                SoundTimerActive = 1
+                if(NPC_State == "normal")
+                {
+                    timer("random_sound",randint(8000) + 4000)
+                }
+                elseif (NPC_State == "fear")
+                {
+                    timer("random_sound",randint(1500) + 700)
+                }
+                else
+                {
+                    timer("random_sound",randint(19000) + 7000)
+                }
+            }
+            
+            if (!FearTimerActive && NPC_State == "fear")
+            {
+                FearTimerActive = 1
+                timer("stop_fear",randint(9000)+13000)
+            }
+            
+            if (!InteractTimerActive)
+            {
+                if(NPC_State == "normal")
+                {
+                    timer("random_interact",randint(15500)+19000) #15500 19000
+                }
+                elseif (NPC_State == "fear")
+                {
+                    timer("random_interact",randint(750)+1000) #750 1000
+                }
+                else
+                {
+                    timer("random_interact",randint(3000)+3000)
+                }
+                InteractTimerActive = 1
+            }
+        
+            if(clk("random_turning"))
+            {
+                randomTurningState()
+            }
+
+            if(clk("random_movement"))
+            {
+                randomMovementState()
+            }
+            
+            if(clk("random_sound"))
+            {
+                randomSound()
+            }
+            
+            if(clk("stop_turning"))
+            {
+                TURN_STATE = "idle"
+            }
+            
+            if(clk("stop_walk_back"))
+            {
+                MOVE_STATE = "idle"
+            }
+            
+            if(clk("stop_fear"))
+            {
+                NPC_State = "normal"
+            }
+            
+            if(clk("usable"))
+            {
+              Can_Use = 1   
+            }
+            
+            if(clk("random_interact"))
+            {
+                randomInteraction()
+            }   
+                 
+    if(owner():keyPressed("7"))
+    {
+      NPC_State = "normal"   
+    }
+    elseif(owner():keyPressed("8"))
+    {
+      NPC_State = "fear"   
+    }
+    elseif(owner():keyPressed("9"))
+    {
+      holoPos(1,owner():aimPos()+vec(randint(-20,20),randint(-20,20),30)) 
+    }
+}
+else
+{ 
+    checkPlayerHealing()   
+}
+
+if(clk("return_state"))
+{
+    MOVE_STATE = "idle"
+
+}
+if(clk("break_chair"))
+{
+    Chair:propBreak()
+}
+if(clk("die"))
+{
+    MOVE_STATE = "dead"
+}
+if(clk("healed"))
+{
+    DTF = 1
+    Dead = 0
+    Health = Max_Health
+    MOVE_STATE = "idle"
+    NPC_State = "normal"
+    
+    NPC:soundPlay(6,0,"scientist/hellothere.wav")
+    moneyGive(Healer,1000)
+    
+    MOVE_STATE = "heal"
+    YAW = (Healer:pos() - NPC:pos()):toAngle()
+        holoAng(1, ang(0,YAW:yaw(),0))
+    stopActions()
+    FearTimerActive = 0
+}
+
+
+## ** MOVEMENT ** ##
+        switch(MOVE_STATE)
+        {
+            case "walk",
+                animation(WALK_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (1.7*MOD))
+            break
+            case "pace",
+                animation(PACE_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (1*MOD))
+            break
+            case "walk_back",
+                animation(WALK_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (-1.7*MOD))
+            break
+            case "run",
+                animation(RUN_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (5*MOD))
+            break
+            case "run_panic",
+                animation(PANIC_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (6*MOD))
+            break
+            case "jump",
+                animation(JUMP_A)
+                holoPos(1, NPC:pos() + NPC:eye() * (1.7*MOD))
+            break
+            case "fear",
+                animation(FEAR_A)
+            break
+            case "dead",
+                animation(DEAD_A)
+            break
+            case "dying",
+                animation(DEATH_A)
+            break
+            case "revive",
+                animation(REVIVE_A)
+            break
+            case "wave",
+                animation(WAVE_A)
+            break
+            case "throw",
+                animation(THROW_A)
+            break
+            case "heal",
+                animation("heal")
+            break
+            default,
+                animation(IDLE_A)
+            break
+        }
+
+## ** TURNING ** ##
+        switch(TURN_STATE)
+        {
+            case "left",
+                holoAng(1, NPC:angles() + ang(0,5,0))
+            break
+            case "right",
+                holoAng(1, NPC:angles() + ang(0,-5,0))
+            break
+            default,
+            
+            break
+        }
+
+
+
+## ** PHYSICS ** ##
+        Height = 20
+        
+        Distance_Down = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height),vec(0,0,-2000)):distance())
+        Distance_Forward = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height),NPC:eye()*100):distance())
+        Distance_Back = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height),NPC:eye()*-100):distance())
+        Distance_Left = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height),NPC:right()*-100):distance())
+        Distance_Right = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height),NPC:right()*100):distance())
+        Distance_Front_Down = round(rangerOffset(2000,NPC:pos() + vec(0,0,Height) + NPC:eye()*35,vec(0,0,-100)):distance())
+       
+
+        if (Distance_Down > Height) # push down
+        {
+            if (Distance_Down < 20) # push distance
+            {
+                holoPos(1,NPC:pos() - vec(0,0,Distance_Down))
+            }
+            else # push normal
+            {
+                holoPos(1,NPC:pos() - vec(0,0,5))
+            }
+        }
+        elseif (Distance_Down < Height) # push up
+        {
+            holoPos(1,NPC:pos() + vec(0,0,1))
+        } 
+        
+        if (Distance_Forward < Height || (Distance_Front_Down > 60 && Distance_Forward >= Height && Distance_Down <= Height)) # push back
+        {
+            holoPos(1,NPC:pos() + NPC:forward() * -5)
+            if(Dead == 0)
+            {
+                MOVE_STATE = "idle"
+                if(StickTurnDirection == "")
+                {
+                    R = randint(2)
+                    if(R == 1)
+                    {
+                        StickTurnDirection = "left"
+                    }
+                    else
+                    {
+                        StickTurnDirection = "right"
+                    }
+                }
+                TURN_STATE = StickTurnDirection
+                #MOVE_STATE = "walk_back"
+                timer("stop_walk_back",800)
+            }
+        }
+        else
+        {
+            StickTurnDirection = ""
+        }
+         
+        if (Distance_Back < 30) # push forward
+        {
+            holoPos(1,NPC:pos() + NPC:forward() * 5)
+        } 
+        
+        if (Distance_Right < 30) # push left
+        {
+            holoPos(1,NPC:pos() + NPC:right() * -5)
+        } 
+        
+        if (Distance_Left < 30) # push right
+        {
+            holoPos(1,NPC:pos() + NPC:right() * 5)
+        } 
+        
+        
+if(owner():keyPressed("0"))
+{
+ die()   
+}
